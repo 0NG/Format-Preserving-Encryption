@@ -42,7 +42,15 @@ void FPE_ff3_encrypt(unsigned int *in, unsigned int *out, const unsigned char *k
 | keylen | the length of the key                    |
 | enc    | can be two value: FPE_ENCRYP for encryp and FPE_DECRYPT for decrypt |
 
-The example code is [test.c](https://github.com/0NG/Format-Preserving-Encryption/blob/master/test.c). Also, I have written a makefile for it. They may help you get started
+The example code is [test.c](https://github.com/0NG/Format-Preserving-Encryption/blob/master/test.c). It may help you get started.
+
+After *make*, to compile with the fpe library, you should run:
+
+```bash
+gcc test.c -o test -L. -lfpe -lm -lcrypto
+```
+
+
 
 ## Existing Implementations
 
