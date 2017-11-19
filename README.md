@@ -14,6 +14,34 @@ A note about FF2: FF2 was originally NOT recommended by NIST, but it is under re
 
 This implementation is based on openssl's BIGNUM and AES, so you need to install openssl first.
 
+I have provide two function for FF1 and FF2 algorithm, respectively.
+
+**void FPE_ff1_encrypt(unsigned int *in, unsigned int *out, const unsigned char *key, const unsigned char *tweak, unsigned int radix, unsigned int inlen, unsigned int tweaklen, const int enc)**
+
+| name     | description                              |
+| -------- | ---------------------------------------- |
+| in       | numeral string to be encrypted, represented as an array of integers |
+| out      | encrypted numeral string, represented as an array of integers |
+| key      | encryption key ( currently, it must be 128 bit), represented as a c string |
+| tweak    | tweak, represented as a c string         |
+| radix    | number of characters in the given alphabet, it must be in [2, 2^16] |
+| inlen    | the length of input numeral string (in)  |
+| tweaklen | the byte length of the tweak             |
+| enc      | can be two value: FPE_ENCRYP for encryp and FPE_DECRYPT for decrypt |
+
+**void FPE_ff3_encrypt(unsigned int *in, unsigned int *out, const unsigned char *key, const unsigned char *tweak, unsigned int radix, unsigned int inlen, const unsigned int keylen, const int enc);**
+
+| name   | description                              |
+| ------ | ---------------------------------------- |
+| in     | numeral string to be encrypted, represented as an array of integers |
+| out    | encrypted numeral string, represented as an array of integers |
+| key    | encryption key ( currently, it must be 128 bit), represented as a c string |
+| tweak  | tweak, its byte length must be 64, represented as a c string |
+| radix  | number of characters in the given alphabet, it must be in [2, 2^16] |
+| inlen  | the length of input numeral string (in)  |
+| keylen | the length of the key                    |
+| enc    | can be two value: FPE_ENCRYP for encryp and FPE_DECRYPT for decrypt |
+
 The example code is [test.c](https://github.com/0NG/Format-Preserving-Encryption/blob/master/test.c). Also, I have written a makefile for it. They may help you get started
 
 ## Existing Implementations
