@@ -16,7 +16,7 @@ This implementation is based on openssl's BIGNUM and AES, so you need to install
 
 I have provide two function for FF1 and FF2 algorithm, respectively.
 
-**void FPE_ff1_encrypt(unsigned int *in, unsigned int *out, const unsigned char *key, const unsigned char *tweak, unsigned int radix, unsigned int inlen, unsigned int tweaklen, const int enc)**
+void FPE_ff1_encrypt(unsigned int *in, unsigned int *out, const unsigned char *key, const unsigned char *tweak, unsigned int radix, unsigned int inlen, unsigned int tweaklen, const int enc)
 
 | name     | description                              |
 | -------- | ---------------------------------------- |
@@ -29,7 +29,7 @@ I have provide two function for FF1 and FF2 algorithm, respectively.
 | tweaklen | the byte length of the tweak             |
 | enc      | can be two value: FPE_ENCRYP for encryp and FPE_DECRYPT for decrypt |
 
-**void FPE_ff3_encrypt(unsigned int *in, unsigned int *out, const unsigned char *key, const unsigned char *tweak, unsigned int radix, unsigned int inlen, const unsigned int keylen, const int enc);**
+void FPE_ff3_encrypt(unsigned int *in, unsigned int *out, const unsigned char *key, const unsigned char *tweak, unsigned int radix, unsigned int inlen, const unsigned int keylen, const int enc)
 
 | name   | description                              |
 | ------ | ---------------------------------------- |
