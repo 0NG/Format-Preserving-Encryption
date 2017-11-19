@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include <string.h>
-#include <math.h>
 #include <assert.h>
 #include <openssl/aes.h>
 #include <openssl/bn.h>
@@ -70,7 +69,7 @@ void num2str_rev(const BIGNUM *X, unsigned int *Y, unsigned int radix, int len, 
 
     BN_copy(XX, X);
     BN_set_word(r, radix);
-    memset(Y, 0, len * 4);
+    memset(Y, 0, len << 2);
     
     for (int i = 0; i < len; ++i) {
         // XX / r = dv ... rem
@@ -95,12 +94,12 @@ void FF3_encrypt(unsigned int *in, unsigned int *out, const unsigned char *key, 
            *qpow_v = BN_new();
     BN_CTX *ctx = BN_CTX_new();
 
-    memcpy(out, in, inlen * 4);
-    int u = ceil(inlen / 2.0);
+    memcpy(out, in, inlen << 2);
+    int u = ceil(inlen, 1);
     int v = inlen - u;
     unsigned int *A = out, *B = out + u;
     pow_uv(qpow_u, qpow_v, radix, u, v, ctx);
-    const int b = ceil(u * bits(radix) / 8.0);
+    const int b = ceil(u * bits(radix), 3);
 
     AES_KEY aes_enc_ctx;
     unsigned char Key[16], iv[16], S[16], P[16];
@@ -172,12 +171,12 @@ void FF3_decrypt(unsigned int *in, unsigned int *out, const unsigned char *key, 
            *qpow_v = BN_new();
     BN_CTX *ctx = BN_CTX_new();
 
-    memcpy(out, in, inlen * 4);
-    int u = ceil(inlen / 2.0);
+    memcpy(out, in, inlen << 2);
+    int u = ceil(inlen, 1);
     int v = inlen - u;
     unsigned int *A = out, *B = out + u;
     pow_uv(qpow_u, qpow_v, radix, u, v, ctx);
-    const int b = ceil(u * bits(radix) / 8.0);
+    const int b = ceil(u * bits(radix), 3);
 
     AES_KEY aes_enc_ctx;
     unsigned char Key[16], iv[16], S[16], P[16];

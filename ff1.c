@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include <string.h>
-#include <math.h>
 #include <assert.h>
 #include <openssl/aes.h>
 #include <openssl/bn.h>
@@ -38,7 +37,7 @@ void num2str(const BIGNUM *X, unsigned int *Y, unsigned int radix, int len, BN_C
 
     BN_copy(XX, X);
     BN_set_word(r, radix);
-    memset(Y, 0, len * 4);
+    memset(Y, 0, len << 2);
     
     for (int i = len - 1; i >= 0; --i) {
         // XX / r = dv ... rem
@@ -63,14 +62,14 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, const unsigned char 
            *qpow_v = BN_new();
     BN_CTX *ctx = BN_CTX_new();
 
-    memcpy(out, in, inlen * 4);
-    int u = inlen / 2;
+    memcpy(out, in, inlen << 2);
+    int u = floor(inlen, 1);
     int v = inlen - u;
     unsigned int *A = out, *B = out + u;
     pow_uv(qpow_u, qpow_v, radix, u, v, ctx);
 
-    const int b = ceil(v * bits(radix) / 8.0);
-    const int d = 4 * ceil(b / 4.0) + 4;
+    const int b = ceil(v * bits(radix), 3);
+    const int d = 4 * ceil(b, 2) + 4;
 
     int pad = ( (-tweaklen - b - 1) % 16 + 16 ) % 16;
     int Qlen = tweaklen + pad + 1 + b;
@@ -94,7 +93,7 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, const unsigned char 
     unsigned char iv[16], R[16];
     AES_KEY aes_enc_ctx;
     AES_set_encrypt_key(key, 128, &aes_enc_ctx);
-    int cnt = ceil(d / 16.0) - 1;
+    int cnt = ceil(d, 4) - 1;
     int Slen = 16 + cnt * 16;
     unsigned char *S = (unsigned char *)malloc(Slen);
     for (int i = 0; i < FF1_ROUNDS; ++i) {
@@ -180,14 +179,14 @@ void FF1_decrypt(const unsigned int *in, unsigned int *out, const unsigned char 
            *qpow_v = BN_new();
     BN_CTX *ctx = BN_CTX_new();
 
-    memcpy(out, in, inlen * 4);
-    int u = inlen / 2;
+    memcpy(out, in, inlen << 2);
+    int u = floor(inlen, 1);
     int v = inlen - u;
     unsigned int *A = out, *B = out + u;
     pow_uv(qpow_u, qpow_v, radix, u, v, ctx);
 
-    const int b = ceil(v * bits(radix) / 8.0);
-    const int d = 4 * ceil(b / 4.0) + 4;
+    const int b = ceil(v * bits(radix), 3);
+    const int d = 4 * ceil(b, 2) + 4;
 
     int pad = ( (-tweaklen - b - 1) % 16 + 16 ) % 16;
     int Qlen = tweaklen + pad + 1 + b;
@@ -210,7 +209,7 @@ void FF1_decrypt(const unsigned int *in, unsigned int *out, const unsigned char 
     unsigned char iv[16], R[16];
     AES_KEY aes_enc_ctx;
     AES_set_encrypt_key(key, 128, &aes_enc_ctx);
-    int cnt = ceil(d / 16.0) - 1;
+    int cnt = ceil(d, 4) - 1;
     int Slen = 16 + cnt * 16;
     unsigned char *S = (unsigned char *)malloc(Slen);
     for (int i = FF1_ROUNDS - 1; i >= 0; --i) {
