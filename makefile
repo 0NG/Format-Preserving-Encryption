@@ -1,17 +1,14 @@
-test: test.o ff1.o ff3.o fpe_locl.o
-	cc -o test test.o ff1.o ff3.o fpe_locl.o -lm -lgmp -lcrypto -O2
-
-test.o: test.c fpe.h
-	cc -c test.c
+libfpe.a: ff1.o ff3.o fpe_locl.o
+	ar rc libfpe.a ff1.o ff3.o fpe_locl.o
 
 ff1.o: ff1.c fpe.h fpe_locl.h
-	cc -c ff1.c
+	cc -c ff1.c -O2
 
 ff3.o: ff3.c fpe.h fpe_locl.h
-	cc -c ff3.c
+	cc -c ff3.c -O2
 
 fpe_locl.o: fpe_locl.c fpe_locl.h
-	cc -c fpe_locl.c
+	cc -c fpe_locl.c -O2 
 
 clean:
-	rm ff1.o ff3.o test.o fpe_locl.o
+	rm ff1.o ff3.o fpe_locl.o
