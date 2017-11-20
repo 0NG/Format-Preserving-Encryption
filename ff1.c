@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <string.h>
+#include <math.h>
 #include <assert.h>
 #include <openssl/aes.h>
 #include <openssl/bn.h>
@@ -62,14 +63,20 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, const unsigned char 
            *qpow_v = BN_new();
     BN_CTX *ctx = BN_CTX_new();
 
+    union {
+        long one;
+        char little;
+    } is_endian = { 1 };
+
     memcpy(out, in, inlen << 2);
-    int u = floor(inlen, 1);
+    int u = floor2(inlen, 1);
     int v = inlen - u;
     unsigned int *A = out, *B = out + u;
     pow_uv(qpow_u, qpow_v, radix, u, v, ctx);
 
-    const int b = ceil(v * bits(radix), 3);
-    const int d = 4 * ceil(b, 2) + 4;
+    unsigned int temp = (unsigned int)ceil(v * log2(radix));
+    const int b = ceil2(temp, 3 );
+    const int d = 4 * ceil2(b, 2) + 4;
 
     int pad = ( (-tweaklen - b - 1) % 16 + 16 ) % 16;
     int Qlen = tweaklen + pad + 1 + b;
@@ -80,10 +87,26 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, const unsigned char 
     P[0] = 0x1;
     P[1] = 0x2;
     P[2] = 0x1;
-    *( (unsigned int *)(P + 3) ) = (radix << 8) | 10;
     P[7] = u % 256;
-    *( (unsigned int *)(P + 8) ) = inlen;
-    *( (unsigned int *)(P + 12) ) = tweaklen;
+    if (is_endian.little) {
+        temp = (radix << 8) | 10;
+        P[3] = (temp >> 24) & 0xff;
+        P[4] = (temp >> 16) & 0xff;
+        P[5] = (temp >> 8) & 0xff;
+        P[6] = temp & 0xff;
+        P[8] = (inlen >> 24) & 0xff;
+        P[9] = (inlen >> 16) & 0xff;
+        P[10] = (inlen >> 8) & 0xff;
+        P[11] = inlen & 0xff;
+        P[12] = (tweaklen >> 24) & 0xff;
+        P[13] = (tweaklen >> 16) & 0xff;
+        P[14] = (tweaklen >> 8) & 0xff;
+        P[15] = tweaklen & 0xff;
+    } else {
+        *( (unsigned int *)(P + 3) ) = (radix << 8) | 10;
+        *( (unsigned int *)(P + 8) ) = inlen;
+        *( (unsigned int *)(P + 12) ) = tweaklen;
+    }
 
     // initialize Q
     memcpy(Q, tweak, tweaklen);
@@ -93,7 +116,7 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, const unsigned char 
     unsigned char iv[16], R[16];
     AES_KEY aes_enc_ctx;
     AES_set_encrypt_key(key, 128, &aes_enc_ctx);
-    int cnt = ceil(d, 4) - 1;
+    int cnt = ceil2(d, 4) - 1;
     int Slen = 16 + cnt * 16;
     unsigned char *S = (unsigned char *)malloc(Slen);
     for (int i = 0; i < FF1_ROUNDS; ++i) {
@@ -109,9 +132,8 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, const unsigned char 
         int qtmp = Qlen - BytesLen;
         memcpy(Q + qtmp, Bytes, BytesLen);
 
-        // ii PRF(P || Q), P is always 16 unsigned chars long
+        // ii PRF(P || Q), P is always 16 bytes long
         memset(iv, 0x00, sizeof(iv));
-        memset(R, 0x00, sizeof(R));
         AES_cbc_encrypt(P, R, 16, &aes_enc_ctx, iv, AES_ENCRYPT);
         int count = Qlen / 16;
         unsigned char Ri[16];
@@ -126,14 +148,25 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, const unsigned char 
         // iii 
         unsigned char tmp[16], SS[16];
         memset(S, 0x00, Slen);
+        assert(Slen >= 16);
         memcpy(S, R, 16);
         for (int j = 1; j <= cnt; ++j) {
             memset(tmp, 0x00, 16);
-            *( (unsigned int *)tmp + 3 ) = j;
+
+            if (is_endian.little) {
+                // convert to big endian
+                // full unroll
+                tmp[15] = j & 0xff;
+                tmp[14] = (j >> 8) & 0xff;
+                tmp[13] = (j >> 16) & 0xff;
+                tmp[12] = (j >> 24) & 0xff;
+            } else *( (unsigned int *)tmp + 3 ) = j;
+
             for (int k = 0; k < 16; ++k)    tmp[k] ^= R[k];
             memset(iv, 0x00, sizeof(iv));
             AES_cbc_encrypt(tmp, SS, 16, &aes_enc_ctx, iv, AES_ENCRYPT);
             assert((S + 16 * j)[0] == 0x00);
+            assert(16 + 16 * j <= Slen);
             memcpy(S + 16 * j, SS, 16);
         }
 
@@ -179,14 +212,20 @@ void FF1_decrypt(const unsigned int *in, unsigned int *out, const unsigned char 
            *qpow_v = BN_new();
     BN_CTX *ctx = BN_CTX_new();
 
+    union {
+        long one;
+        char little;
+    } is_endian = { 1 };
+
     memcpy(out, in, inlen << 2);
-    int u = floor(inlen, 1);
+    int u = floor2(inlen, 1);
     int v = inlen - u;
     unsigned int *A = out, *B = out + u;
     pow_uv(qpow_u, qpow_v, radix, u, v, ctx);
 
-    const int b = ceil(v * bits(radix), 3);
-    const int d = 4 * ceil(b, 2) + 4;
+    unsigned int temp = (unsigned int)ceil(v * log2(radix));
+    const int b = ceil2(temp, 3);
+    const int d = 4 * ceil2(b, 2) + 4;
 
     int pad = ( (-tweaklen - b - 1) % 16 + 16 ) % 16;
     int Qlen = tweaklen + pad + 1 + b;
@@ -196,10 +235,26 @@ void FF1_decrypt(const unsigned int *in, unsigned int *out, const unsigned char 
     P[0] = 0x1;
     P[1] = 0x2;
     P[2] = 0x1;
-    *( (unsigned int *)(P + 3) ) = (radix << 8) | 10;
     P[7] = u % 256;
-    *( (unsigned int *)(P + 8) ) = inlen;
-    *( (unsigned int *)(P + 12) ) = tweaklen;
+    if (is_endian.little) {
+        temp = (radix << 8) | 10;
+        P[3] = (temp >> 24) & 0xff;
+        P[4] = (temp >> 16) & 0xff;
+        P[5] = (temp >> 8) & 0xff;
+        P[6] = temp & 0xff;
+        P[8] = (inlen >> 24) & 0xff;
+        P[9] = (inlen >> 16) & 0xff;
+        P[10] = (inlen >> 8) & 0xff;
+        P[11] = inlen & 0xff;
+        P[12] = (tweaklen >> 24) & 0xff;
+        P[13] = (tweaklen >> 16) & 0xff;
+        P[14] = (tweaklen >> 8) & 0xff;
+        P[15] = tweaklen & 0xff;
+    } else {
+        *( (unsigned int *)(P + 3) ) = (radix << 8) | 10;
+        *( (unsigned int *)(P + 8) ) = inlen;
+        *( (unsigned int *)(P + 12) ) = tweaklen;
+    }
 
     // initialize Q
     memcpy(Q, tweak, tweaklen);
@@ -209,7 +264,7 @@ void FF1_decrypt(const unsigned int *in, unsigned int *out, const unsigned char 
     unsigned char iv[16], R[16];
     AES_KEY aes_enc_ctx;
     AES_set_encrypt_key(key, 128, &aes_enc_ctx);
-    int cnt = ceil(d, 4) - 1;
+    int cnt = ceil2(d, 4) - 1;
     int Slen = 16 + cnt * 16;
     unsigned char *S = (unsigned char *)malloc(Slen);
     for (int i = FF1_ROUNDS - 1; i >= 0; --i) {
@@ -244,7 +299,16 @@ void FF1_decrypt(const unsigned int *in, unsigned int *out, const unsigned char 
         memcpy(S, R, 16);
         for (int j = 1; j <= cnt; ++j) {
             memset(tmp, 0x00, 16);
-            *( (unsigned int *)tmp + 3 ) = j;
+
+            if (is_endian.little) {
+                // convert to big endian
+                // full unroll
+                tmp[15] = j & 0xff;
+                tmp[14] = (j >> 8) & 0xff;
+                tmp[13] = (j >> 16) & 0xff;
+                tmp[12] = (j >> 24) & 0xff;
+            } else *( (unsigned int *)tmp + 3 ) = j;
+
             for (int k = 0; k < 16; ++k)    tmp[k] ^= R[k];
             memset(iv, 0x00, sizeof(iv));
             AES_cbc_encrypt(tmp, SS, 16, &aes_enc_ctx, iv, AES_ENCRYPT);
