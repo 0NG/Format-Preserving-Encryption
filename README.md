@@ -47,7 +47,7 @@ The example code is [test.c](https://github.com/0NG/Format-Preserving-Encryption
 After *make*, to compile with the fpe library, you should run:
 
 ```bash
-gcc test.c -o test -L. -lfpe -lm -lcrypto
+gcc test.c -o test -L. -lfpe -lcrypto
 ```
 
 
