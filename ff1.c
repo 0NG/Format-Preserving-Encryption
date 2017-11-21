@@ -53,7 +53,7 @@ void num2str(const BIGNUM *X, unsigned int *Y, unsigned int radix, int len, BN_C
     return;
 }
 
-void FF1_encrypt(const unsigned int *in, unsigned int *out, const unsigned char *key, const unsigned char *tweak, const unsigned int radix, size_t inlen, size_t tweaklen)
+void FF1_encrypt(const unsigned int *in, unsigned int *out, AES_KEY *aes_enc_ctx, const unsigned char *tweak, const unsigned int radix, size_t inlen, size_t tweaklen)
 {
     BIGNUM *bnum = BN_new(),
            *y = BN_new(),
@@ -114,8 +114,6 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, const unsigned char 
     assert(tweaklen + pad - 1 <= Qlen);
 
     unsigned char R[16];
-    AES_KEY aes_enc_ctx;
-    AES_set_encrypt_key(key, 128, &aes_enc_ctx);
     int cnt = ceil2(d, 4) - 1;
     int Slen = 16 + cnt * 16;
     unsigned char *S = (unsigned char *)malloc(Slen);
@@ -133,13 +131,13 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, const unsigned char 
         memcpy(Q + qtmp, Bytes, BytesLen);
 
         // ii PRF(P || Q), P is always 16 bytes long
-        AES_encrypt(P, R, &aes_enc_ctx);
+        AES_encrypt(P, R, aes_enc_ctx);
         int count = Qlen / 16;
         unsigned char Ri[16];
         unsigned char *Qi = Q;
         for (int cc = 0; cc < count; ++cc) {
             for (int j = 0; j < 16; ++j)    Ri[j] = Qi[j] ^ R[j];
-            AES_encrypt(Ri, R, &aes_enc_ctx);
+            AES_encrypt(Ri, R, aes_enc_ctx);
             Qi += 16;
         }
 
@@ -161,7 +159,7 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, const unsigned char 
             } else *( (unsigned int *)tmp + 3 ) = j;
 
             for (int k = 0; k < 16; ++k)    tmp[k] ^= R[k];
-            AES_encrypt(tmp, SS, &aes_enc_ctx);
+            AES_encrypt(tmp, SS, aes_enc_ctx);
             assert((S + 16 * j)[0] == 0x00);
             assert(16 + 16 * j <= Slen);
             memcpy(S + 16 * j, SS, 16);
@@ -199,7 +197,7 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, const unsigned char 
     return;
 }
 
-void FF1_decrypt(const unsigned int *in, unsigned int *out, const unsigned char *key, const unsigned char *tweak, const unsigned int radix, size_t inlen, size_t tweaklen)
+void FF1_decrypt(const unsigned int *in, unsigned int *out, AES_KEY *aes_enc_ctx, const unsigned char *tweak, const unsigned int radix, size_t inlen, size_t tweaklen)
 {
     BIGNUM *bnum = BN_new(),
            *y = BN_new(),
@@ -259,8 +257,6 @@ void FF1_decrypt(const unsigned int *in, unsigned int *out, const unsigned char 
     assert(tweaklen + pad - 1 <= Qlen);
 
     unsigned char R[16];
-    AES_KEY aes_enc_ctx;
-    AES_set_encrypt_key(key, 128, &aes_enc_ctx);
     int cnt = ceil2(d, 4) - 1;
     int Slen = 16 + cnt * 16;
     unsigned char *S = (unsigned char *)malloc(Slen);
@@ -278,13 +274,13 @@ void FF1_decrypt(const unsigned int *in, unsigned int *out, const unsigned char 
 
         // ii PRF(P || Q)
         memset(R, 0x00, sizeof(R));
-        AES_encrypt(P, R, &aes_enc_ctx);
+        AES_encrypt(P, R, aes_enc_ctx);
         int count = Qlen / 16;
         unsigned char Ri[16];
         unsigned char *Qi = Q;
         for (int cc = 0; cc < count; ++cc) {
             for (int j = 0; j < 16; ++j)    Ri[j] = Qi[j] ^ R[j];
-            AES_encrypt(Ri, R, &aes_enc_ctx);
+            AES_encrypt(Ri, R, aes_enc_ctx);
             Qi += 16;
         }
 
@@ -305,7 +301,7 @@ void FF1_decrypt(const unsigned int *in, unsigned int *out, const unsigned char 
             } else *( (unsigned int *)tmp + 3 ) = j;
 
             for (int k = 0; k < 16; ++k)    tmp[k] ^= R[k];
-            AES_encrypt(tmp, SS, &aes_enc_ctx);
+            AES_encrypt(tmp, SS, aes_enc_ctx);
             assert((S + 16 * j)[0] == 0x00);
             memcpy(S + 16 * j, SS, 16);
         }
@@ -341,14 +337,34 @@ void FF1_decrypt(const unsigned int *in, unsigned int *out, const unsigned char 
     return;
 }
 
-void FPE_ff1_encrypt(unsigned int *in, unsigned int *out, const unsigned char *key, const unsigned char *tweak, unsigned int radix, unsigned int inlen, unsigned int tweaklen, const int enc)
+int FPE_set_ff1_key(const unsigned char *userKey, const int bits, const unsigned char *tweak, const unsigned int tweaklen, const int radix, FPE_KEY *key)
+{
+    int ret;
+    if (bits != 128 && bits != 192 && bits != 256) {
+        ret = -1;
+        return ret;
+    }
+    key->radix = radix;
+    key->tweaklen = tweaklen;
+    key->tweak = (unsigned char *)malloc(tweaklen);
+    memcpy(key->tweak, tweak, tweaklen);
+    ret = AES_set_encrypt_key(userKey, bits, &key->aes_enc_ctx);
+    return ret;
+}
+
+void FPE_unset_ff1_key(FPE_KEY *key)
+{
+    free(key->tweak);
+}
+
+void FPE_ff1_encrypt(unsigned int *in, unsigned int *out, unsigned int inlen, FPE_KEY *key, const int enc)
 {
     if (enc)
-        FF1_encrypt(in, out, key, tweak,
-                    radix, inlen, tweaklen);
+        FF1_encrypt(in, out, &key->aes_enc_ctx, key->tweak,
+                    key->radix, inlen, key->tweaklen);
 
     else
-        FF1_decrypt(in, out, key, tweak,
-                    radix, inlen, tweaklen);
+        FF1_decrypt(in, out, &key->aes_enc_ctx, key->tweak,
+                    key->radix, inlen, key->tweaklen);
 }
 

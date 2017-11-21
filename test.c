@@ -21,37 +21,45 @@ int main(void)
     for (int i = 0; i < Xlen; ++i)
         assert(X[i] < radix);
 
+    FPE_KEY ff1, ff3;
+
+    FPE_set_ff1_key(K, 128, T, Tlen, 10, &ff1);
+    FPE_set_ff3_key(K, 128, T, 10, &ff3);
+
     printf("origin: ");
     for (int i = 0; i < Xlen; ++i)    printf("%d ", X[i]);
     printf("\n\n");
 
     printf("========== FF1 ==========\n");
-    FPE_ff1_encrypt(X, Y, K, T, radix, Xlen, Tlen, FPE_ENCRYPT);
+    FPE_ff1_encrypt(X, Y, Xlen, &ff1, FPE_ENCRYPT);
 
     printf("ciphertext: ");
     for (int i = 0; i < Xlen; ++i)    printf("%d ", Y[i]);
     printf("\n\n");
 
     memset(X, 0, sizeof(X));
-    FPE_ff1_encrypt(Y, X, K, T, radix, Xlen, Tlen, FPE_DECRYPT);
+    FPE_ff1_encrypt(Y, X, Xlen, &ff1, FPE_DECRYPT);
 
     printf("plaintext: ");
     for (int i = 0; i < Xlen; ++i)    printf("%d ", X[i]);
     printf("\n\n");
 
     printf("========== FF3 ==========\n");
-    FPE_ff3_encrypt(X, Y, K, T, radix, Xlen, FPE_ENCRYPT);
+    FPE_ff3_encrypt(X, Y, Xlen, &ff3, FPE_ENCRYPT);
 
     printf("ciphertext: ");
     for (int i = 0; i < Xlen; ++i)    printf("%d ", Y[i]);
     printf("\n\n");
 
     memset(X, 0, sizeof(X));
-    FPE_ff3_encrypt(Y, X, K, T, radix, Xlen, FPE_DECRYPT);
+    FPE_ff3_encrypt(Y, X, Xlen, &ff3, FPE_DECRYPT);
 
     printf("plaintext: ");
     for (int i = 0; i < Xlen; ++i)    printf("%d ", X[i]);
     printf("\n");
+
+    FPE_unset_ff1_key(&ff1);
+    FPE_unset_ff3_key(&ff3);
 
     return 0;
 }
