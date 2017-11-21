@@ -14,36 +14,72 @@ A note about FF2: FF2 was originally NOT recommended by NIST, but it is under re
 
 This implementation is based on openssl's BIGNUM and AES, so you need to install openssl first.
 
-I have provide two function for FF1 and FF2 algorithm, respectively.
+There are several functions for FF1 and FF2 algorithm, respectively.
 
-void FPE_ff1_encrypt(unsigned int *in, unsigned int *out, const unsigned char *key, const unsigned char *tweak, unsigned int radix, unsigned int inlen, unsigned int tweaklen, const int enc)
+1. Set and unset ff1 key and tweak
+
+```c++
+int FPE_set_ff1_key(const unsigned char *userKey, const int bits, const unsigned char *tweak, const unsigned int tweaklen, const int radix, FPE_KEY *key);
+
+void FPE_unset_ff1_key(FPE_KEY *key);
+```
 
 | name     | description                              |
 | -------- | ---------------------------------------- |
-| in       | numeral string to be encrypted, represented as an array of integers |
-| out      | encrypted numeral string, represented as an array of integers |
-| key      | encryption key ( currently, it must be 128 bit), represented as a c string |
+| userKey  | encryption key (128 bit, 192 bits or 256 bits), represented as a c string |
+| bits     | length of userKey (128, 192 or 256)      |
 | tweak    | tweak, represented as a c string         |
-| radix    | number of characters in the given alphabet, it must be in [2, 2^16] |
-| inlen    | the length of input numeral string (in)  |
 | tweaklen | the byte length of the tweak             |
-| enc      | can be two value: FPE_ENCRYP for encryp and FPE_DECRYPT for decrypt |
+| radix    | number of characters in the given alphabet, it must be in [2, 2^16] |
+| key      | FPE_KEY structure                        |
 
-void FPE_ff3_encrypt(unsigned int *in, unsigned int *out, const unsigned char *key, const unsigned char *tweak, unsigned int radix, unsigned int inlen, const int enc)
+2. encrypt or decrypt text using ff1 algorithm
+
+```c++
+void FPE_ff1_encrypt(unsigned int *in, unsigned int *out, unsigned int inlen, FPE_KEY *key, const int enc)
+```
 
 | name  | description                              |
 | ----- | ---------------------------------------- |
 | in    | numeral string to be encrypted, represented as an array of integers |
 | out   | encrypted numeral string, represented as an array of integers |
-| key   | encryption key ( currently, it must be 128 bit), represented as a c string |
-| tweak | tweak, its byte length must be 64, represented as a c string |
-| radix | number of characters in the given alphabet, it must be in [2, 2^16] |
 | inlen | the length of input numeral string (in)  |
+| key   | FPE_KEY structure that have been set with key and tweak |
+| enc   | can be two value: FPE_ENCRYP for encryp and FPE_DECRYPT for decrypt |
+
+3. Set ff3 key and tweak
+
+```c++
+int FPE_set_ff3_key(const unsigned char *userKey, const int bits, const unsigned char *tweak, const unsigned int radix, FPE_KEY *key);
+
+void FPE_unset_ff3_key(FPE_KEY *key);
+```
+
+| name    | description                              |
+| ------- | ---------------------------------------- |
+| userKey | encryption key (128 bit, 192 bits or 256 bits), represented as a c string |
+| bits    | length of userKey (128, 192 or 256)      |
+| tweak   | tweak, represented as a c string (it must be 64 bytes) |
+| radix   | number of characters in the given alphabet, it must be in [2, 2^16] |
+| key     | FPE_KEY structure                        |
+
+4. encrypt or decrypt text using ff3 algorithm
+
+```c++
+void FPE_ff3_encrypt(unsigned int *in, unsigned int *out, unsigned int inlen, FPE_KEY *key, const int enc);
+```
+
+| name  | description                              |
+| ----- | ---------------------------------------- |
+| in    | numeral string to be encrypted, represented as an array of integers |
+| out   | encrypted numeral string, represented as an array of integers |
+| inlen | the length of input numeral string (in)  |
+| key   | FPE_KEY structure that have been set with key and tweak |
 | enc   | can be two value: FPE_ENCRYP for encryp and FPE_DECRYPT for decrypt |
 
 The example code is [test.c](https://github.com/0NG/Format-Preserving-Encryption/blob/master/test.c). Also, there are some official [test vectors](http://csrc.nist.gov/groups/ST/toolkit/examples.html) for both FF1 and FF3 provided by NIST. They may help you get started.
 
-After *make*, to compile with the fpe library, you should run:
+To compile the test.c with the fpe library, you can *make test* or *make* and execute:
 
 ```bash
 gcc test.c -o test -L. -lfpe -lm -lcrypto
