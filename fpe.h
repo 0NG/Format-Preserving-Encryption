@@ -16,7 +16,7 @@ extern "C" {
 
 void FPE_ff1_encrypt(unsigned int *in, unsigned int *out, const unsigned char *key, const unsigned char *tweak, unsigned int radix, unsigned int inlen, unsigned int tweaklen, const int enc);
 
-void FPE_ff3_encrypt(unsigned int *in, unsigned int *out, const unsigned char *key, const unsigned char *tweak, unsigned int radix, unsigned int inlen, const unsigned int keylen, const int enc);
+void FPE_ff3_encrypt(unsigned int *in, unsigned int *out, const unsigned char *key, const unsigned char *tweak, unsigned int radix, unsigned int inlen, const int enc);
 
 # ifdef __cplusplus
 }

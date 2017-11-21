@@ -37,18 +37,3 @@ void pow_uv(BIGNUM *pow_u, BIGNUM *pow_v, unsigned int x, int u, int v, BN_CTX *
     return;
     */
 }
-
-// ceil( log2(x) )
-int bits(int x)
-{
-    int len = 0;
-    if (x >> 16) { len += 16; x >>= 16; }
-    if (x >> 8) { len += 8; x >>= 8; }
-    if (x >> 4) { len += 4; x >>= 4; }
-    if (x >> 2) { len += 2; x >>= 2; }
-    if (x >> 1) { len += 1; x >>= 1; }
-    len += x & 1;
-    assert(len > 0 && len <= 16);
-    return len;
-}
-
