@@ -29,28 +29,25 @@ void FPE_ff1_encrypt(unsigned int *in, unsigned int *out, const unsigned char *k
 | tweaklen | the byte length of the tweak             |
 | enc      | can be two value: FPE_ENCRYP for encryp and FPE_DECRYPT for decrypt |
 
-void FPE_ff3_encrypt(unsigned int *in, unsigned int *out, const unsigned char *key, const unsigned char *tweak, unsigned int radix, unsigned int inlen, const unsigned int keylen, const int enc)
+void FPE_ff3_encrypt(unsigned int *in, unsigned int *out, const unsigned char *key, const unsigned char *tweak, unsigned int radix, unsigned int inlen, const int enc)
 
-| name   | description                              |
-| ------ | ---------------------------------------- |
-| in     | numeral string to be encrypted, represented as an array of integers |
-| out    | encrypted numeral string, represented as an array of integers |
-| key    | encryption key ( currently, it must be 128 bit), represented as a c string |
-| tweak  | tweak, its byte length must be 64, represented as a c string |
-| radix  | number of characters in the given alphabet, it must be in [2, 2^16] |
-| inlen  | the length of input numeral string (in)  |
-| keylen | the length of the key                    |
-| enc    | can be two value: FPE_ENCRYP for encryp and FPE_DECRYPT for decrypt |
+| name  | description                              |
+| ----- | ---------------------------------------- |
+| in    | numeral string to be encrypted, represented as an array of integers |
+| out   | encrypted numeral string, represented as an array of integers |
+| key   | encryption key ( currently, it must be 128 bit), represented as a c string |
+| tweak | tweak, its byte length must be 64, represented as a c string |
+| radix | number of characters in the given alphabet, it must be in [2, 2^16] |
+| inlen | the length of input numeral string (in)  |
+| enc   | can be two value: FPE_ENCRYP for encryp and FPE_DECRYPT for decrypt |
 
-The example code is [test.c](https://github.com/0NG/Format-Preserving-Encryption/blob/master/test.c). It may help you get started.
+The example code is [test.c](https://github.com/0NG/Format-Preserving-Encryption/blob/master/test.c). Also, there are some official [test vectors](http://csrc.nist.gov/groups/ST/toolkit/examples.html) for both FF1 and FF3 provided by NIST. They may help you get started.
 
 After *make*, to compile with the fpe library, you should run:
 
 ```bash
-gcc test.c -o test -L. -lfpe -lcrypto
+gcc test.c -o test -L. -lfpe -lm -lcrypto
 ```
-
-
 
 ## Existing Implementations
 

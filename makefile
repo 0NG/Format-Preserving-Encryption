@@ -1,3 +1,6 @@
+test: test.c libfpe.a
+	gcc test.c -o test -L. -lfpe -lcrypto -lm -O2 -Wno-unused-result
+
 libfpe.a: ff1.o ff3.o fpe_locl.o
 	ar rcs libfpe.a ff1.o ff3.o fpe_locl.o
 

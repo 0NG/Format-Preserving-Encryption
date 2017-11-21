@@ -113,7 +113,7 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, const unsigned char 
     memset(Q + tweaklen, 0x00, pad);
     assert(tweaklen + pad - 1 <= Qlen);
 
-    unsigned char iv[16], R[16];
+    unsigned char R[16];
     AES_KEY aes_enc_ctx;
     AES_set_encrypt_key(key, 128, &aes_enc_ctx);
     int cnt = ceil2(d, 4) - 1;
@@ -133,15 +133,13 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, const unsigned char 
         memcpy(Q + qtmp, Bytes, BytesLen);
 
         // ii PRF(P || Q), P is always 16 bytes long
-        memset(iv, 0x00, sizeof(iv));
-        AES_cbc_encrypt(P, R, 16, &aes_enc_ctx, iv, AES_ENCRYPT);
+        AES_encrypt(P, R, &aes_enc_ctx);
         int count = Qlen / 16;
         unsigned char Ri[16];
         unsigned char *Qi = Q;
         for (int cc = 0; cc < count; ++cc) {
-            memset(iv, 0x00, sizeof(iv));
             for (int j = 0; j < 16; ++j)    Ri[j] = Qi[j] ^ R[j];
-            AES_cbc_encrypt(Ri, R, 16, &aes_enc_ctx, iv, AES_ENCRYPT);
+            AES_encrypt(Ri, R, &aes_enc_ctx);
             Qi += 16;
         }
 
@@ -163,8 +161,7 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, const unsigned char 
             } else *( (unsigned int *)tmp + 3 ) = j;
 
             for (int k = 0; k < 16; ++k)    tmp[k] ^= R[k];
-            memset(iv, 0x00, sizeof(iv));
-            AES_cbc_encrypt(tmp, SS, 16, &aes_enc_ctx, iv, AES_ENCRYPT);
+            AES_encrypt(tmp, SS, &aes_enc_ctx);
             assert((S + 16 * j)[0] == 0x00);
             assert(16 + 16 * j <= Slen);
             memcpy(S + 16 * j, SS, 16);
@@ -261,7 +258,7 @@ void FF1_decrypt(const unsigned int *in, unsigned int *out, const unsigned char 
     memset(Q + tweaklen, 0x00, pad);
     assert(tweaklen + pad - 1 <= Qlen);
 
-    unsigned char iv[16], R[16];
+    unsigned char R[16];
     AES_KEY aes_enc_ctx;
     AES_set_encrypt_key(key, 128, &aes_enc_ctx);
     int cnt = ceil2(d, 4) - 1;
@@ -280,16 +277,14 @@ void FF1_decrypt(const unsigned int *in, unsigned int *out, const unsigned char 
         memcpy(Q + qtmp, Bytes, BytesLen);
 
         // ii PRF(P || Q)
-        memset(iv, 0x00, sizeof(iv));
         memset(R, 0x00, sizeof(R));
-        AES_cbc_encrypt(P, R, 16, &aes_enc_ctx, iv, AES_ENCRYPT);
+        AES_encrypt(P, R, &aes_enc_ctx);
         int count = Qlen / 16;
         unsigned char Ri[16];
         unsigned char *Qi = Q;
         for (int cc = 0; cc < count; ++cc) {
-            memset(iv, 0x00, sizeof(iv));
             for (int j = 0; j < 16; ++j)    Ri[j] = Qi[j] ^ R[j];
-            AES_cbc_encrypt(Ri, R, 16, &aes_enc_ctx, iv, AES_ENCRYPT);
+            AES_encrypt(Ri, R, &aes_enc_ctx);
             Qi += 16;
         }
 
@@ -310,8 +305,7 @@ void FF1_decrypt(const unsigned int *in, unsigned int *out, const unsigned char 
             } else *( (unsigned int *)tmp + 3 ) = j;
 
             for (int k = 0; k < 16; ++k)    tmp[k] ^= R[k];
-            memset(iv, 0x00, sizeof(iv));
-            AES_cbc_encrypt(tmp, SS, 16, &aes_enc_ctx, iv, AES_ENCRYPT);
+            AES_encrypt(tmp, SS, &aes_enc_ctx);
             assert((S + 16 * j)[0] == 0x00);
             memcpy(S + 16 * j, SS, 16);
         }
