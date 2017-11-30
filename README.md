@@ -14,7 +14,7 @@ A note about FF2: FF2 was originally NOT recommended by NIST, but it is under re
 
 This implementation is based on openssl's BIGNUM and AES, so you need to install openssl first.
 
-There are several functions for FF1 and FF2 algorithm, respectively.
+There are several functions for FF1 and FF3 algorithm, respectively.
 
 1. Set and unset ff1 key and tweak
 
@@ -45,7 +45,7 @@ void FPE_ff1_encrypt(unsigned int *in, unsigned int *out, unsigned int inlen, FP
 | out   | encrypted numeral string, represented as an array of integers |
 | inlen | the length of input numeral string (in)  |
 | key   | FPE_KEY structure that have been set with key and tweak |
-| enc   | can be two value: FPE_ENCRYP for encryp and FPE_DECRYPT for decrypt |
+| enc   | can be two value: FPE_ENCRYPT for encrypt and FPE_DECRYPT for decrypt |
 
 3. Set ff3 key and tweak
 
@@ -75,7 +75,7 @@ void FPE_ff3_encrypt(unsigned int *in, unsigned int *out, unsigned int inlen, FP
 | out   | encrypted numeral string, represented as an array of integers |
 | inlen | the length of input numeral string (in)  |
 | key   | FPE_KEY structure that have been set with key and tweak |
-| enc   | can be two value: FPE_ENCRYP for encryp and FPE_DECRYPT for decrypt |
+| enc   | can be two value: FPE_ENCRYPT for encrypt and FPE_DECRYPT for decrypt |
 
 The example code is [test.c](https://github.com/0NG/Format-Preserving-Encryption/blob/master/test.c). Also, there are some official [test vectors](http://csrc.nist.gov/groups/ST/toolkit/examples.html) for both FF1 and FF3 provided by NIST. They may help you get started.
 
