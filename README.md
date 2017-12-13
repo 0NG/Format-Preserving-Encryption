@@ -47,7 +47,7 @@ void FPE_ff1_encrypt(unsigned int *in, unsigned int *out, unsigned int inlen, FP
 | key   | FPE_KEY structure that have been set with key and tweak |
 | enc   | can be two value: FPE_ENCRYPT for encrypt and FPE_DECRYPT for decrypt |
 
-3. Set ff3 key and tweak
+3. Set and unset ff3 key and tweak
 
 ```c++
 int FPE_set_ff3_key(const unsigned char *userKey, const int bits, const unsigned char *tweak, const unsigned int radix, FPE_KEY *key);
