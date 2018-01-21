@@ -77,13 +77,15 @@ void FPE_ff3_encrypt(unsigned int *in, unsigned int *out, unsigned int inlen, FP
 | key   | FPE_KEY structure that have been set with key and tweak |
 | enc   | can be two value: FPE_ENCRYPT for encrypt and FPE_DECRYPT for decrypt |
 
-The example code is [test.c](https://github.com/0NG/Format-Preserving-Encryption/blob/master/test.c). Also, there are some official [test vectors](http://csrc.nist.gov/groups/ST/toolkit/examples.html) for both FF1 and FF3 provided by NIST. They may help you get started.
+The example code is [example.c](https://github.com/0NG/Format-Preserving-Encryption/blob/master/example.c). Also, there are some official [test vectors](http://csrc.nist.gov/groups/ST/toolkit/examples.html) for both FF1 and FF3 provided by NIST. You can run [test.py](https://github.com/0NG/Format-Preserving-Encryption/blob/master/test.py).
 
-To compile the test.c with the fpe library, you can *make test* or *make* and execute:
+To compile the example.c with the fpe library, you can *make example* or *make* and execute:
 
 ```bash
-gcc test.c -o test -L. -lfpe -lm -lcrypto
+gcc example.c -o example -L. -lfpe -lm -lcrypto
 ```
+
+**Run [test.py](https://github.com/0NG/Format-Preserving-Encryption/blob/master/test.py) for testing with official test vectors.**
 
 ## Existing Implementations
 
