@@ -181,52 +181,56 @@ ff3 = [
     ],
 ]
 
-regexp = re.compile('(?<=ciphertext: ).+')
+def main():
+    regexp = re.compile('(?<=ciphertext: ).+')
+    
+    countErr = 0
+    
+    print 'FF1 test: '
+    for index, test in enumerate(ff1):
+        radix = test[0]
+        key = test[1]
+        tweak = test[2]
+        plain = test[3]
+        cipher = test[4]
+        p = subprocess.Popen(['./example', key, tweak, str(radix), plain], stdin = subprocess.PIPE, stdout = subprocess.PIPE)
+        output = p.communicate()[0]
+        #print output
+        results = regexp.findall(output)[0]
+        p.wait()
+    
+        print 'case #%d:' % index
+        print 'plaintext: ' + plain
+        print 'ciphertext: ' + results
+        if results != cipher:
+            print 'Wrong!'
+            ++countErr
+        else:
+            print 'Right!'
+    
+    print 'FF3 test: '
+    for index, test in enumerate(ff3):
+        radix = test[0]
+        key = test[1]
+        tweak = test[2]
+        plain = test[3]
+        cipher = test[4]
+        p = subprocess.Popen(['./example', key, tweak, str(radix), plain], stdin = subprocess.PIPE, stdout = subprocess.PIPE)
+        output = p.communicate()[0]
+        results = regexp.findall(output)[1]
+        p.wait()
+    
+        print 'case #%d:' % index
+        print 'plaintext: ' + plain
+        print 'ciphertext: ' + results
+        if results != cipher:
+            print 'Wrong!'
+            ++countErr
+        else:
+            print 'Right!'
+    
+    print 'Finish! %d error!' % countErr
 
-countErr = 0
-
-print 'FF1 test: '
-for index, test in enumerate(ff1):
-    radix = test[0]
-    key = test[1]
-    tweak = test[2]
-    plain = test[3]
-    cipher = test[4]
-    p = subprocess.Popen(['./example', key, tweak, str(radix), plain], stdin = subprocess.PIPE, stdout = subprocess.PIPE)
-    output = p.communicate()[0]
-    #print output
-    results = regexp.findall(output)[0]
-    p.wait()
-
-    print 'case #%d:' % index
-    print 'plaintext: ' + plain
-    print 'ciphertext: ' + results
-    if results != cipher:
-        print 'Wrong!'
-        ++countErr
-    else:
-        print 'Right!'
-
-print 'FF3 test: '
-for index, test in enumerate(ff3):
-    radix = test[0]
-    key = test[1]
-    tweak = test[2]
-    plain = test[3]
-    cipher = test[4]
-    p = subprocess.Popen(['./example', key, tweak, str(radix), plain], stdin = subprocess.PIPE, stdout = subprocess.PIPE)
-    output = p.communicate()[0]
-    results = regexp.findall(output)[1]
-    p.wait()
-
-    print 'case #%d:' % index
-    print 'plaintext: ' + plain
-    print 'ciphertext: ' + results
-    if results != cipher:
-        print 'Wrong!'
-        ++countErr
-    else:
-        print 'Right!'
-
-print 'Finish! %d error!' % countErr
+if __name__ == '__main__':
+    main()
 

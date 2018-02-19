@@ -75,7 +75,7 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, AES_KEY *aes_enc_ctx
     pow_uv(qpow_u, qpow_v, radix, u, v, ctx);
 
     unsigned int temp = (unsigned int)ceil(v * log2(radix));
-    const int b = ceil2(temp, 3 );
+    const int b = ceil2(temp, 3);
     const int d = 4 * ceil2(b, 2) + 4;
 
     int pad = ( (-tweaklen - b - 1) % 16 + 16 ) % 16;

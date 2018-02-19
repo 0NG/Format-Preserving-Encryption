@@ -79,11 +79,7 @@ void FPE_ff3_encrypt(unsigned int *in, unsigned int *out, unsigned int inlen, FP
 
 The example code is [example.c](https://github.com/0NG/Format-Preserving-Encryption/blob/master/example.c). Also, there are some official [test vectors](http://csrc.nist.gov/groups/ST/toolkit/examples.html) for both FF1 and FF3 provided by NIST. You can run [test.py](https://github.com/0NG/Format-Preserving-Encryption/blob/master/test.py).
 
-To compile the example.c with the fpe library, you can *make example* or *make* and execute:
-
-```bash
-gcc example.c -o example -L. -lfpe -lm -lcrypto
-```
+To compile the example.c with the fpe library, just run *make example* or *make*.
 
 **Run [test.py](https://github.com/0NG/Format-Preserving-Encryption/blob/master/test.py) for testing with official test vectors.**
 

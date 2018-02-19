@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include "fpe.h"
+#include <fpe.h>
 
 void hex2chars(unsigned char hex[], unsigned char result[])
 {
