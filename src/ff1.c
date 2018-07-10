@@ -3,6 +3,7 @@
 #include <math.h>
 #include <assert.h>
 #include <openssl/aes.h>
+#include <openssl/crypto.h>
 #include <openssl/bn.h>
 #include "fpe.h"
 #include "fpe_locl.h"
@@ -81,7 +82,7 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, AES_KEY *aes_enc_ctx
     int pad = ( (-tweaklen - b - 1) % 16 + 16 ) % 16;
     int Qlen = tweaklen + pad + 1 + b;
     unsigned char P[16];
-    unsigned char *Q = (unsigned char *)malloc(Qlen), *Bytes = (unsigned char *)malloc(b);
+    unsigned char *Q = (unsigned char *)OPENSSL_malloc(Qlen), *Bytes = (unsigned char *)OPENSSL_malloc(b);
 
     // initialize P
     P[0] = 0x1;
@@ -116,7 +117,7 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, AES_KEY *aes_enc_ctx
     unsigned char R[16];
     int cnt = ceil2(d, 4) - 1;
     int Slen = 16 + cnt * 16;
-    unsigned char *S = (unsigned char *)malloc(Slen);
+    unsigned char *S = (unsigned char *)OPENSSL_malloc(Slen);
     for (int i = 0; i < FF1_ROUNDS; ++i) {
         // v
         int m = (i & 1)? v: u;
@@ -191,9 +192,9 @@ void FF1_encrypt(const unsigned int *in, unsigned int *out, AES_KEY *aes_enc_ctx
     BN_clear_free(qpow_u);
     BN_clear_free(qpow_v);
     BN_CTX_free(ctx);
-    free(Bytes);
-    free(Q);
-    free(S);
+    OPENSSL_free(Bytes);
+    OPENSSL_free(Q);
+    OPENSSL_free(S);
     return;
 }
 
@@ -225,7 +226,7 @@ void FF1_decrypt(const unsigned int *in, unsigned int *out, AES_KEY *aes_enc_ctx
     int pad = ( (-tweaklen - b - 1) % 16 + 16 ) % 16;
     int Qlen = tweaklen + pad + 1 + b;
     unsigned char P[16];
-    unsigned char *Q = (unsigned char *)malloc(Qlen), *Bytes = (unsigned char *)malloc(b);
+    unsigned char *Q = (unsigned char *)OPENSSL_malloc(Qlen), *Bytes = (unsigned char *)OPENSSL_malloc(b);
     // initialize P
     P[0] = 0x1;
     P[1] = 0x2;
@@ -259,7 +260,7 @@ void FF1_decrypt(const unsigned int *in, unsigned int *out, AES_KEY *aes_enc_ctx
     unsigned char R[16];
     int cnt = ceil2(d, 4) - 1;
     int Slen = 16 + cnt * 16;
-    unsigned char *S = (unsigned char *)malloc(Slen);
+    unsigned char *S = (unsigned char *)OPENSSL_malloc(Slen);
     for (int i = FF1_ROUNDS - 1; i >= 0; --i) {
         // v
         int m = (i & 1)? v: u;
@@ -331,9 +332,9 @@ void FF1_decrypt(const unsigned int *in, unsigned int *out, AES_KEY *aes_enc_ctx
     BN_clear_free(qpow_u);
     BN_clear_free(qpow_v);
     BN_CTX_free(ctx);
-    free(Bytes);
-    free(Q);
-    free(S);
+    OPENSSL_free(Bytes);
+    OPENSSL_free(Q);
+    OPENSSL_free(S);
     return;
 }
 
@@ -346,7 +347,7 @@ int FPE_set_ff1_key(const unsigned char *userKey, const int bits, const unsigned
     }
     key->radix = radix;
     key->tweaklen = tweaklen;
-    key->tweak = (unsigned char *)malloc(tweaklen);
+    key->tweak = (unsigned char *)OPENSSL_malloc(tweaklen);
     memcpy(key->tweak, tweak, tweaklen);
     ret = AES_set_encrypt_key(userKey, bits, &key->aes_enc_ctx);
     return ret;
@@ -354,7 +355,7 @@ int FPE_set_ff1_key(const unsigned char *userKey, const int bits, const unsigned
 
 void FPE_unset_ff1_key(FPE_KEY *key)
 {
-    free(key->tweak);
+    OPENSSL_free(key->tweak);
 }
 
 void FPE_ff1_encrypt(unsigned int *in, unsigned int *out, unsigned int inlen, FPE_KEY *key, const int enc)
