@@ -77,7 +77,7 @@ void FPE_ff3_encrypt(unsigned int *in, unsigned int *out, unsigned int inlen, FP
 | key   | FPE_KEY structure that have been set with key and tweak |
 | enc   | can be two value: FPE_ENCRYPT for encrypt and FPE_DECRYPT for decrypt |
 
-The example code is [example.c](https://github.com/0NG/Format-Preserving-Encryption/blob/master/example.c). Also, there are some official [test vectors](http://csrc.nist.gov/groups/ST/toolkit/examples.html) for both FF1 and FF3 provided by NIST. You can run [test.py](https://github.com/0NG/Format-Preserving-Encryption/blob/master/test.py).
+The example code is [example.c](https://github.com/0NG/Format-Preserving-Encryption/blob/master/example.c). Also, there are some official [test vectors](http://csrc.nist.gov/groups/ST/toolkit/examples.html) for both FF1 and FF3 provided by NIST. You can run [test.py](https://github.com/0NG/Format-Preserving-Encryption/blob/master/test.py) with python 3.x.
 
 To compile the example.c with the fpe library, just run *make example* or *make*.
 
@@ -90,3 +90,8 @@ Based on searching GitHub and the Internet, there are no known reference impleme
 An [existing C++ implementation](https://github.com/randombit/botan/tree/753b4c2d5301574d3c9390b79aa275a49809e6c8/src/lib/misc/fpe_fe1) based on the FFX mode, but the implementation differs from the NIST recommendation. 
 
 Also, another [implementation in Go](https://github.com/capitalone/fpe) is great. I have learned a lot from it.
+
+## TODO
+
+1. Make the API simpler
+2. More effective implementation
