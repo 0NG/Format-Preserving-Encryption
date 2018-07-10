@@ -186,7 +186,7 @@ def main():
     
     countErr = 0
     
-    print 'FF1 test: '
+    print('FF1 test: ')
     for index, test in enumerate(ff1):
         radix = test[0]
         key = test[1]
@@ -195,20 +195,19 @@ def main():
         cipher = test[4]
         p = subprocess.Popen(['./example', key, tweak, str(radix), plain], stdin = subprocess.PIPE, stdout = subprocess.PIPE)
         output = p.communicate()[0]
-        #print output
-        results = regexp.findall(output)[0]
+        results = regexp.findall(output.decode('utf-8'))[0]
         p.wait()
     
-        print 'case #%d:' % index
-        print 'plaintext: ' + plain
-        print 'ciphertext: ' + results
+        print('case #%d:' % index)
+        print('plaintext: ' + plain)
+        print('ciphertext: ' + results)
         if results != cipher:
-            print 'Wrong!'
+            print('Wrong!')
             ++countErr
         else:
-            print 'Right!'
+            print('Right!')
     
-    print 'FF3 test: '
+    print('-------------------------\nFF3 test: ')
     for index, test in enumerate(ff3):
         radix = test[0]
         key = test[1]
@@ -217,19 +216,19 @@ def main():
         cipher = test[4]
         p = subprocess.Popen(['./example', key, tweak, str(radix), plain], stdin = subprocess.PIPE, stdout = subprocess.PIPE)
         output = p.communicate()[0]
-        results = regexp.findall(output)[1]
+        results = regexp.findall(output.decode('utf-8'))[1]
         p.wait()
     
-        print 'case #%d:' % index
-        print 'plaintext: ' + plain
-        print 'ciphertext: ' + results
+        print('case #%d:' % index)
+        print('plaintext: ' + plain)
+        print('ciphertext: ' + results)
         if results != cipher:
-            print 'Wrong!'
+            print('Wrong!')
             ++countErr
         else:
-            print 'Right!'
+            print('Right!')
     
-    print 'Finish! %d error!' % countErr
+    print('Finish! %d error!' % countErr)
 
 if __name__ == '__main__':
     main()
