@@ -182,7 +182,7 @@ ff3 = [
 ]
 
 def main():
-    regexp = re.compile('(?<=ciphertext: ).+')
+    regexp = re.compile('(?<=ciphertext: )[a-zA-Z0-9]+')
     
     countErr = 0
     
@@ -203,7 +203,7 @@ def main():
         print('ciphertext: ' + results)
         if results != cipher:
             print('Wrong!')
-            ++countErr
+            countErr += 1
         else:
             print('Right!')
     
@@ -224,7 +224,7 @@ def main():
         print('ciphertext: ' + results)
         if results != cipher:
             print('Wrong!')
-            ++countErr
+            countErr += 1
         else:
             print('Right!')
     
